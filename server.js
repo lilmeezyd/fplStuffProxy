@@ -41,6 +41,21 @@ app.get('/bootstrap-static', (req, res) => {
   .catch((error) => console.log(error))
 })
 
+app.get('/element-summary/x', (req, res) => {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: `https://fantasy.premierleague.com/api/element-summary/${req.params.x}/`,
+    headers: {}
+  };
+
+  axios.request(config)
+  .then((response) => {
+    res.status(200).json(response.data)
+  })
+  .catch((error) => console.log(error))
+})
+
 app.get('/:managerId', (req, res) => {
     let config = {
         method: 'get',
