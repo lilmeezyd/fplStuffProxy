@@ -41,7 +41,7 @@ app.get('/bootstrap-static', (req, res) => {
   .catch((error) => console.log(error))
 })
 
-app.get('/element-summary/x', (req, res) => {
+app.get('/element-summary/:x', (req, res) => {
   let config = {
     method: 'get',
     maxBodyLength: Infinity,
