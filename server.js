@@ -1,7 +1,7 @@
-import axios from 'axios'
-import express from 'express'
-import cors from 'cors'
+const axios = require('axios')
+const express = require('express')
 const port = process.env.PORT|| 7000
+const cors = require('cors')
 
 const app = express()
 
@@ -131,5 +131,4 @@ app.get('/transfers/:managerId', (req, res) => {
 
 
 app.listen(port, console.log(`Server running at port: ${port}`))
-
-export default app
+module.exports = app;
