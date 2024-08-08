@@ -1,6 +1,6 @@
 const axios = require('axios')
 const express = require('express')
-const port = process.env.PORT|| 7000
+const port = process.env.PORT|| 5000
 const cors = require('cors')
 
 const app = express()
