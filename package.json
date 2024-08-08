@@ -1,6 +1,7 @@
 {
   "name": "proxy-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "proxy server for requests",
   "main": "server.js",
   "scripts": {
