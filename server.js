@@ -104,8 +104,9 @@ app.get('/:managerId/event/:eventId/picks', (req, res) => {
     res.status(200).json(response.data)
   })
   .catch((error) => {
-    const errMsg = error?.response?.data?.msg || error?.message;
-    res.status(error?.response?.status).json(error?.response?.statusText)
+    //const errMsg = error?.response?.data?.msg || error?.message;
+    const errMsg = error?.response?.statusText
+    res.status(error?.response?.status).json(errMsg)
     
   })
 })
