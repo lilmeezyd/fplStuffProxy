@@ -1,6 +1,6 @@
 const axios = require('axios')
 const express = require('express')
-const port = process.env.PORT|| 5000
+const port = process.env.PORT|| 7000
 const cors = require('cors')
 
 const app = express()
@@ -98,12 +98,15 @@ app.get('/:managerId/event/:eventId/picks', (req, res) => {
     headers: { }
   };
 
+
   axios.request(config)
   .then((response) => {
     res.status(200).json(response.data)
   })
   .catch((error) => {
-    console.log(error);
+    const errMsg = error?.response?.data?.msg || error?.message;
+    res.status(error?.response?.status).json(error?.response?.statusText)
+    
   })
 })
 
