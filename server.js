@@ -1,10 +1,14 @@
-const axios = require('axios')
-const express = require('express')
+import axios from 'axios'
+import express, { urlencoded } from 'express'
+import dotenv from 'dotenv'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import dataRoutes from './routes/dataRoutes.js'
+import connectDB from './config/db.js'
 const port = process.env.PORT|| 5000
-const cors = require('cors')
 
 const app = express()
-
+connectDB()
 app.use(express.json())
 const corsConfig = {
   origin: '*',
@@ -13,7 +17,11 @@ const corsConfig = {
 }
 app.use(cors(corsConfig))
 app.options("", cors(corsConfig))
+app.use(express.json())
+app.use(urlencoded({extended: true}))
+app.use(cookieParser())
 
+app.use('/api/data', dataRoutes)
 app.get('/fixtures', (req, res) => {
   let config = {
     method: 'get',
@@ -29,6 +37,7 @@ app.get('/fixtures', (req, res) => {
   .catch((error) => console.log(error))
 })
 
+/*
 app.get('/bootstrap-static', (req, res) => {
   let config = {
     method: 'get',
@@ -57,7 +66,7 @@ app.get('/element-summary/:x', (req, res) => {
     res.status(200).json(response.data)
   })
   .catch((error) => console.log(error))
-})
+})*/
 
 app.get('/:managerId', (req, res) => {
     let config = {
@@ -134,4 +143,4 @@ app.get('/transfers/:managerId', (req, res) => {
 
 
 app.listen(port, console.log(`Server running at port: ${port}`))
-module.exports = app;
+//module.exports = app;
