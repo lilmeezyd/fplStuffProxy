@@ -13,9 +13,11 @@ const eplPlayerSchema = mongoose.Schema({
         type: String
     }, now_cost: {
         type: Number
-    }, second_name: {
+    }, web_name: { type: String}, second_name: {
         type: String
     },
+    cost_change_start: {type: Number},
+    chance_of_playing_next_round: { type: Number},
     team: {
         type: Number
     }, team_code: {
