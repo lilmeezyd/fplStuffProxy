@@ -42,12 +42,12 @@ const loadData = asyncHandler(async (req, res) => {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
         const { events, elements, teams, element_types } = response
-        /*await Promise.all(events.map(async event => {
+        await Promise.all(events.map(async event => {
             const {id, name, deadline_time, finished, is_previous, is_current, is_next} = event
             await Event.findOneAndUpdate({id:id}, {id, name, deadline_time, finished, is_previous, is_current, is_next}, 
                 {upsert: true, new: true}
             )
-        }))*/
+        }))
         /*await Promise.all(element_types.map(async elem => {
             const {id, plural_name, singular_name, singular_name_short} = elem
             await Elem.findOneAndUpdate({id:id}, {id, plural_name, singular_name, singular_name_short}, 
@@ -62,7 +62,7 @@ const loadData = asyncHandler(async (req, res) => {
         }))*/
 
         try {
-            await Promise.all(elements.slice(630, 700).map(async element => {
+            await Promise.all(elements.slice(140, 210).map(async element => {
                 const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
@@ -122,7 +122,7 @@ const getTeams = asyncHandler(async (req, res) => {
 })
 const getEvents = asyncHandler(async (req, res) => {
     const events = await Event.find({})
-    res.status(200).json(events)
+    res.status(200).json(events.sort((x,y) => x.id < y.id ? -1 : 1))
 })
 const getElems = asyncHandler(async (req, res) => {
     const elems = await Elem.find({})
