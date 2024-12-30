@@ -171,18 +171,11 @@ cron.schedule( "19 01 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("35 12 * * *", updatePlayers(0, 100, timezone, 12, 35), {timezone})
-cron.schedule("36 12 * * *", updatePlayers(100, 200, timezone, 12, 36), {timezone})
-cron.schedule("37 12 * * *", updatePlayers(200, 300, timezone, 12, 37), {timezone})
-cron.schedule("38 12 * * *", updatePlayers(300, 400, timezone, 12, 38), {timezone})
-cron.schedule("39 12 * * *", updatePlayers(400, 500, timezone, 12, 39), {timezone})
-cron.schedule("40 12 * * *", updatePlayers(500, 600, timezone, 12, 40), {timezone})
-cron.schedule("41 12 * * *", updatePlayers(600, 700, timezone, 12, 41), {timezone})
-cron.schedule("42 12 * * *", updatePlayers(700, 800, timezone, 12, 42), {timezone})
+cron.schedule("40 18 * * *", updatePlayers, {timezone})
 
-async function updatePlayers (start, end, zone, hrs, mins) {
-  const now = moment().tz(zone);
-  if (now.hour() === hrs && now.minute() === mins) {
+async function updatePlayers () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 18 && now.minute() === 40) {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -193,45 +186,65 @@ async function updatePlayers (start, end, zone, hrs, mins) {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
       const { elements } = response
-      await Promise.all(elements.slice(start, end).map(async element => {
-        const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-            team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-            own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-            starts, expected_goals,
-            expected_assists,
-            cost_change_start,
-            expected_goal_involvements,
-            expected_goals_conceded, expected_goals_per_90,
-            saves_per_90,
-            chance_of_playing_next_round,
-            expected_assists_per_90,
-            expected_goal_involvements_per_90,
-            expected_goals_conceded_per_90,
-            goals_conceded_per_90
-        } = element
-        let config = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
-            headers: {}
-        };
-        const elementData = await axios.request(config)
-        const resData = await elementData.data
-        const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-            team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-            own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-            starts, expected_goals,
-            expected_assists,
-            expected_goal_involvements,
-            expected_goals_conceded, expected_goals_per_90,
-            saves_per_90,
-            cost_change_start,
-            chance_of_playing_next_round,
-            expected_assists_per_90,
-            expected_goal_involvements_per_90,
-            expected_goals_conceded_per_90,
-            goals_conceded_per_90, ...resData }, {upsert: true, new: true})
-    }))
+      const newElements = elements.slice(0, 100)
+      const newElements1 = elements.slice(100, 200)
+      const newElements2 = elements.slice(200, 300)
+      const newElements3 = elements.slice(300, 400)
+      const newElements4 = elements.slice(500, 600)
+      const newElements5 = elements.slice(600, 700)
+      const newElements6 = elements.slice(400, 500)
+      const newElements7 = elements.slice(700, 800)
+      const runPlayers = async(Elements) => {
+        await Promise.all(Elements.map(async element => {
+          const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+              team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+              own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+              starts, expected_goals,
+              expected_assists,
+              cost_change_start,
+              expected_goal_involvements,
+              expected_goals_conceded, expected_goals_per_90,
+              saves_per_90,
+              chance_of_playing_next_round,
+              expected_assists_per_90,
+              expected_goal_involvements_per_90,
+              expected_goals_conceded_per_90,
+              goals_conceded_per_90
+          } = element
+          let config = {
+              method: 'get',
+              maxBodyLength: Infinity,
+              url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
+              headers: {}
+          };
+          const elementData = await axios.request(config)
+          const resData = await elementData.data
+          const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+              team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+              own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+              starts, expected_goals,
+              expected_assists,
+              expected_goal_involvements,
+              expected_goals_conceded, expected_goals_per_90,
+              saves_per_90,
+              cost_change_start,
+              chance_of_playing_next_round,
+              expected_assists_per_90,
+              expected_goal_involvements_per_90,
+              expected_goals_conceded_per_90,
+              goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+      }))
+      }
+
+      runPlayers(newElements)
+      runPlayers(newElements1)
+      runPlayers(newElements2)
+      runPlayers(newElements3)
+      runPlayers(newElements4)
+      runPlayers(newElements5)
+      runPlayers(newElements6)
+      runPlayers(newElements7)
+      
     res.status(200).json('players loaded')
   } catch (error) {
       console.log(error)
