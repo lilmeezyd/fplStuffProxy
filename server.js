@@ -146,9 +146,9 @@ app.get('/transfers/:managerId', (req, res) => {
   })
 })
 
-cron.schedule( "19 01 * * *", async (req, res) => {
+cron.schedule( "01 15 * * *", async (req, res) => {
   const now = moment().tz(timezone);
-  if (now.hour() === 1 && now.minute() === 19) {
+  if (now.hour() === 15 && now.minute() === 1) {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
@@ -171,11 +171,11 @@ cron.schedule( "19 01 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("40 18 * * *", updatePlayers, {timezone})
+cron.schedule("32 04 * * *", updatePlayers, {timezone})
 
 async function updatePlayers () {
   const now = moment().tz(timezone);
-  if (now.hour() === 18 && now.minute() === 40) {
+  if (now.hour() === 4 && now.minute() === 32) {
     let config = {
       method: 'get',
       maxBodyLength: Infinity,
