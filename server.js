@@ -171,14 +171,14 @@ cron.schedule( "19 01 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("30 12 * * *", updatePlayers(0, 100, timezone, 12, 30), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(100, 200, timezone, 12, 31), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(200, 300, timezone, 12, 32), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(300, 400, timezone, 12, 33), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(400, 500, timezone, 12, 34), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(500, 600, timezone, 12, 35), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(600, 700, timezone, 12, 36), {timezone})
-cron.schedule("30 12 * * *", updatePlayers(700, 800, timezone, 12, 37), {timezone})
+cron.schedule("35 12 * * *", updatePlayers(0, 100, timezone, 12, 35), {timezone})
+cron.schedule("36 12 * * *", updatePlayers(100, 200, timezone, 12, 36), {timezone})
+cron.schedule("37 12 * * *", updatePlayers(200, 300, timezone, 12, 37), {timezone})
+cron.schedule("38 12 * * *", updatePlayers(300, 400, timezone, 12, 38), {timezone})
+cron.schedule("39 12 * * *", updatePlayers(400, 500, timezone, 12, 39), {timezone})
+cron.schedule("40 12 * * *", updatePlayers(500, 600, timezone, 12, 40), {timezone})
+cron.schedule("41 12 * * *", updatePlayers(600, 700, timezone, 12, 41), {timezone})
+cron.schedule("42 12 * * *", updatePlayers(700, 800, timezone, 12, 42), {timezone})
 
 async function updatePlayers (start, end, zone, hrs, mins) {
   const now = moment().tz(zone);
