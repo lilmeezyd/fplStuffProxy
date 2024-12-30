@@ -7,7 +7,8 @@ import { loadData,
     getPlayers,
     getTeams,
     addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5,
-    addPlayersList6, addPlayersList7
+    addPlayersList6, addPlayersList7,
+    updateEvents
  } from '../controllers/dataController.js'
 /*import { protect, roles } from "../middleware/authMiddleware.js";
 import ROLES from "../config/permissions.js";*/
@@ -16,6 +17,7 @@ const router = express.Router()
 
 router.route('/getElems').get(getElems)
 router.route('/getEvents').get(getEvents)
+router.route('/updateEvents').get(updateEvents)
 router.route('/getFixtures').get(getFixtures)
 router.route('/getPlayers').get(getPlayers)
 router.route('/getTeams').get(getTeams)

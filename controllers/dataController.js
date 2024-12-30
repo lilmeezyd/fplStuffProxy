@@ -31,6 +31,30 @@ const loadFixtures = asyncHandler(async (req, res) => {
       }
 })
 
+const updateEvents = asyncHandler(async (req, res) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://fantasy.premierleague.com/api/bootstrap-static`,
+        headers: {}
+    };
+    try {
+        const bootstrapped = await axios.request(config)
+        const response = await bootstrapped.data
+        const { events } = response
+        console.log(events[0])
+        await Promise.all(events.map(async event => {
+            const {id, name, deadline_time, finished, is_previous, is_current, is_next} = event
+            await Event.findOneAndUpdate({id:id}, {id, name, deadline_time, finished, is_previous, is_current, is_next}, 
+                {upsert: true, new: true}
+            )
+        }))
+        res.status(201).json('Events updated')
+    } catch (error) {
+        console.log(error)
+    }
+})
+
 const loadData = asyncHandler(async (req, res) => {
     let config = {
         method: 'get',
@@ -62,7 +86,7 @@ const loadData = asyncHandler(async (req, res) => {
         }))*/
 
         try {
-            await Promise.all(elements.slice(140, 210).map(async element => {
+            await Promise.all(elements.slice(630, 700).map(async element => {
                 const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
@@ -493,4 +517,5 @@ export { loadData,
     getFixtures,
     getPlayers,
     getTeams,
+    updateEvents,
      addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5, addPlayersList6, addPlayersList7  }
