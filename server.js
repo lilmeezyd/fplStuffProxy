@@ -171,81 +171,191 @@ cron.schedule( "01 15 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("32 04 * * *", updatePlayers, {timezone})
+cron.schedule("30 23 * * *", updatePlayers, {timezone})
+cron.schedule("32 23 * * *", updatePlayers1, {timezone})
+cron.schedule("34 23 * * *", updatePlayers2, {timezone})
+cron.schedule("36 23 * * *", updatePlayers3, {timezone})
+cron.schedule("38 23 * * *", updatePlayers4, {timezone})
+cron.schedule("40 23 * * *", updatePlayers5, {timezone})
+cron.schedule("42 23 * * *", updatePlayers6, {timezone})
+cron.schedule("44 23 * * *", updatePlayers7, {timezone})
+
+let config = {
+  method: 'get',
+  maxBodyLength: Infinity,
+  url: `https://fantasy.premierleague.com/api/bootstrap-static`,
+  headers: {}
+};
+
+const runPlayers = async(Elements) => {
+  await Promise.all(Elements.map(async element => {
+    const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+        team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+        own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+        starts, expected_goals,
+        expected_assists,
+        cost_change_start,
+        expected_goal_involvements,
+        expected_goals_conceded, expected_goals_per_90,
+        saves_per_90,
+        chance_of_playing_next_round,
+        expected_assists_per_90,
+        expected_goal_involvements_per_90,
+        expected_goals_conceded_per_90,
+        goals_conceded_per_90
+    } = element
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
+        headers: {}
+    };
+    const elementData = await axios.request(config)
+    const resData = await elementData.data
+    await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+        team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+        own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+        starts, expected_goals,
+        expected_assists,
+        expected_goal_involvements,
+        expected_goals_conceded, expected_goals_per_90,
+        saves_per_90,
+        cost_change_start,
+        chance_of_playing_next_round,
+        expected_assists_per_90,
+        expected_goal_involvements_per_90,
+        expected_goals_conceded_per_90,
+        goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+}))
+}
 
 async function updatePlayers () {
   const now = moment().tz(timezone);
-  if (now.hour() === 4 && now.minute() === 32) {
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `https://fantasy.premierleague.com/api/bootstrap-static`,
-      headers: {}
-  };
+  if (now.hour() === 23 && now.minute() === 30) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
       const { elements } = response
       const newElements = elements.slice(0, 100)
-      const newElements1 = elements.slice(100, 200)
-      const newElements2 = elements.slice(200, 300)
-      const newElements3 = elements.slice(300, 400)
-      const newElements4 = elements.slice(500, 600)
-      const newElements5 = elements.slice(600, 700)
-      const newElements6 = elements.slice(400, 500)
-      const newElements7 = elements.slice(700, 800)
-      const runPlayers = async(Elements) => {
-        await Promise.all(Elements.map(async element => {
-          const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-              team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-              own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-              starts, expected_goals,
-              expected_assists,
-              cost_change_start,
-              expected_goal_involvements,
-              expected_goals_conceded, expected_goals_per_90,
-              saves_per_90,
-              chance_of_playing_next_round,
-              expected_assists_per_90,
-              expected_goal_involvements_per_90,
-              expected_goals_conceded_per_90,
-              goals_conceded_per_90
-          } = element
-          let config = {
-              method: 'get',
-              maxBodyLength: Infinity,
-              url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
-              headers: {}
-          };
-          const elementData = await axios.request(config)
-          const resData = await elementData.data
-          const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-              team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-              own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-              starts, expected_goals,
-              expected_assists,
-              expected_goal_involvements,
-              expected_goals_conceded, expected_goals_per_90,
-              saves_per_90,
-              cost_change_start,
-              chance_of_playing_next_round,
-              expected_assists_per_90,
-              expected_goal_involvements_per_90,
-              expected_goals_conceded_per_90,
-              goals_conceded_per_90, ...resData }, {upsert: true, new: true})
-      }))
-      }
 
       runPlayers(newElements)
-      runPlayers(newElements1)
-      runPlayers(newElements2)
-      runPlayers(newElements3)
-      runPlayers(newElements4)
-      runPlayers(newElements5)
-      runPlayers(newElements6)
-      runPlayers(newElements7)
       
-    res.status(200).json('players loaded')
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers1 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 32) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(100, 200)
+
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers2 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 34) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(200, 300)
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers3 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 36) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(300, 400)
+
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers4 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 38) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(500, 600)
+
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers5 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 40) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(600, 700)
+
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers6 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 42) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(700, 800)
+      runPlayers(newElements)
+      
+  } catch (error) {
+      console.log(error)
+  }
+  }
+}
+
+async function updatePlayers7 () {
+  const now = moment().tz(timezone);
+  if (now.hour() === 23 && now.minute() === 44) {
+  try {
+      const bootstrapped = await axios.request(config)
+      const response = await bootstrapped.data
+      const { elements } = response
+      const newElements = elements.slice(400, 500)
+      runPlayers(newElements)
+      
   } catch (error) {
       console.log(error)
   }
