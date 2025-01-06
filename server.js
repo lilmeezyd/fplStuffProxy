@@ -171,14 +171,14 @@ cron.schedule( "01 15 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("30 00 * * *", updatePlayers, {timezone})
-cron.schedule("32 00 * * *", updatePlayers1, {timezone})
-cron.schedule("34 00 * * *", updatePlayers2, {timezone})
-cron.schedule("36 00 * * *", updatePlayers3, {timezone})
-cron.schedule("38 00 * * *", updatePlayers4, {timezone})
-cron.schedule("40 00 * * *", updatePlayers5, {timezone})
-cron.schedule("42 00 * * *", updatePlayers6, {timezone})
-cron.schedule("44 00 * * *", updatePlayers7, {timezone})
+cron.schedule("46 04 * * *", updatePlayers, {timezone})
+cron.schedule("32 04 * * *", updatePlayers1, {timezone})
+cron.schedule("34 04 * * *", updatePlayers2, {timezone})
+cron.schedule("36 04 * * *", updatePlayers3, {timezone})
+cron.schedule("38 04 * * *", updatePlayers4, {timezone})
+cron.schedule("40 04 * * *", updatePlayers5, {timezone})
+cron.schedule("42 04 * * *", updatePlayers6, {timezone})
+cron.schedule("44 04 * * *", updatePlayers7, {timezone})
 
 let config = {
   method: 'get',
@@ -231,7 +231,7 @@ const runPlayers = async(Elements) => {
 
 async function updatePlayers () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 30) {
+  if (now.hour() === 4 && now.minute() === 46) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -248,7 +248,7 @@ async function updatePlayers () {
 
 async function updatePlayers1 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 32) {
+  if (now.hour() === 4 && now.minute() === 32) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -265,7 +265,7 @@ async function updatePlayers1 () {
 
 async function updatePlayers2 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 34) {
+  if (now.hour() === 4 && now.minute() === 34) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -281,7 +281,7 @@ async function updatePlayers2 () {
 
 async function updatePlayers3 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 36) {
+  if (now.hour() === 4 && now.minute() === 36) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -298,7 +298,7 @@ async function updatePlayers3 () {
 
 async function updatePlayers4 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 38) {
+  if (now.hour() === 4 && now.minute() === 38) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -315,7 +315,7 @@ async function updatePlayers4 () {
 
 async function updatePlayers5 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 40) {
+  if (now.hour() === 4 && now.minute() === 40) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -332,7 +332,7 @@ async function updatePlayers5 () {
 
 async function updatePlayers6 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 42) {
+  if (now.hour() === 4 && now.minute() === 42) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
@@ -348,7 +348,7 @@ async function updatePlayers6 () {
 
 async function updatePlayers7 () {
   const now = moment().tz(timezone);
-  if (now.hour() === 0 && now.minute() === 44) {
+  if (now.hour() === 4 && now.minute() === 44) {
   try {
       const bootstrapped = await axios.request(config)
       const response = await bootstrapped.data
