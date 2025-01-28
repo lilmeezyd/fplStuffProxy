@@ -171,14 +171,14 @@ cron.schedule( "01 15 * * *", async (req, res) => {
   }
 }, {timezone})
 
-cron.schedule("46 04 * * *", updatePlayers, {timezone})
-cron.schedule("32 04 * * *", updatePlayers1, {timezone})
-cron.schedule("34 04 * * *", updatePlayers2, {timezone})
-cron.schedule("36 04 * * *", updatePlayers3, {timezone})
-cron.schedule("38 04 * * *", updatePlayers4, {timezone})
-cron.schedule("40 04 * * *", updatePlayers5, {timezone})
-cron.schedule("42 04 * * *", updatePlayers6, {timezone})
-cron.schedule("44 04 * * *", updatePlayers7, {timezone})
+cron.schedule("37 02 * * *", updatePlayers, {timezone})
+cron.schedule("39 02 * * *", updatePlayers1, {timezone})
+cron.schedule("41 02 * * *", updatePlayers2, {timezone})
+cron.schedule("43 02 * * *", updatePlayers3, {timezone})
+cron.schedule("45 02 * * *", updatePlayers4, {timezone})
+cron.schedule("47 02 * * *", updatePlayers5, {timezone})
+cron.schedule("49 02 * * *", updatePlayers6, {timezone})
+cron.schedule("51 02 * * *", updatePlayers7, {timezone})
 
 let config = {
   method: 'get',

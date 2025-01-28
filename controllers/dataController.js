@@ -5,7 +5,7 @@ import Elem from "../models/elementType.js";
 import Team from "../models/teamModel.js";
 import Event from "../models/eventModel.js";
 import Fixture from "../models/fixtureModel.js";
-
+ 
 const loadFixtures = asyncHandler(async (req, res) => {
     let config = {
         method: 'get',
@@ -16,7 +16,7 @@ const loadFixtures = asyncHandler(async (req, res) => {
       try {
         const response = await axios.request(config)
         const fixtures = await response.data
-        /*await Promise.all(fixtures.map(async fixture => {
+        await Promise.all(fixtures.map(async fixture => {
             const {event, finished, kickoff_time, id, started, team_a,team_h,
             team_h_difficulty,
           team_a_difficulty} = fixture
@@ -25,7 +25,7 @@ const loadFixtures = asyncHandler(async (req, res) => {
               team_a_difficulty}, 
                 {upsert: true, new: true}
             )
-        }))*/
+        }))
       } catch (error) {
         console.log(error)
       }
@@ -42,7 +42,6 @@ const updateEvents = asyncHandler(async (req, res) => {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
         const { events } = response
-        console.log(events[0])
         await Promise.all(events.map(async event => {
             const {id, name, deadline_time, finished, is_previous, is_current, is_next} = event
             await Event.findOneAndUpdate({id:id}, {id, name, deadline_time, finished, is_previous, is_current, is_next}, 
@@ -72,7 +71,7 @@ const loadData = asyncHandler(async (req, res) => {
                 {upsert: true, new: true}
             )
         }))
-        /*await Promise.all(element_types.map(async elem => {
+        await Promise.all(element_types.map(async elem => {
             const {id, plural_name, singular_name, singular_name_short} = elem
             await Elem.findOneAndUpdate({id:id}, {id, plural_name, singular_name, singular_name_short}, 
                 {upsert: true, new: true}
@@ -83,10 +82,10 @@ const loadData = asyncHandler(async (req, res) => {
             await Team.findOneAndUpdate({id:id}, {code, id, name, short_name, strength}, 
                 {upsert: true, new: true}
             )
-        }))*/
+        }))
 
         try {
-            await Promise.all(elements.slice(630, 700).map(async element => {
+            await Promise.all(elements.slice(0, 100).map(async element => {
                 const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
@@ -172,15 +171,17 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(101, 200).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+             await Promise.all(elements.slice(100, 200).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -194,7 +195,7 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -202,13 +203,14 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
@@ -230,15 +232,17 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(201, 300).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+            await Promise.all(elements.slice(200, 300).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -252,7 +256,7 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -260,13 +264,14 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
@@ -288,15 +293,17 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(301, 400).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+            await Promise.all(elements.slice(300, 400).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -310,7 +317,7 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -318,13 +325,14 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
@@ -346,15 +354,17 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(401, 500).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+            await Promise.all(elements.slice(400, 500).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -368,7 +378,7 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -376,13 +386,14 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
@@ -405,15 +416,17 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(501, 600).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+            await Promise.all(elements.slice(500, 600).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -427,7 +440,7 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -435,13 +448,14 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
@@ -464,15 +478,17 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            const players = await Promise.all(elements.slice(601, 700).map(async element => {
-                const { element_type, event_points, first_name, id, news, now_cost, second_name,
+            await Promise.all(elements.slice(600, 730).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
                     expected_assists,
+                    cost_change_start,
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
@@ -486,7 +502,7 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                return { element_type, event_points, first_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -494,13 +510,14 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
                     expected_goal_involvements,
                     expected_goals_conceded, expected_goals_per_90,
                     saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }
+                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            console.log(players.length)
-            res.status(200).json(players)
+            res.status(200).json('players loaded')
         } catch (error) {
             console.log(error)
         }
