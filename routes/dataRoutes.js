@@ -1,5 +1,11 @@
 import express from 'express'
-import { loadData,
+import { 
+    registerUser,
+    loginUser,
+    requestPasswordReset,
+    resetPassword,
+    changePassword,
+    loadData,
     loadFixtures,
     getElems,
     getEvents,
@@ -10,24 +16,29 @@ import { loadData,
     addPlayersList6, addPlayersList7,
     updateEvents
  } from '../controllers/dataController.js'
-/*import { protect, roles } from "../middleware/authMiddleware.js";
-import ROLES from "../config/permissions.js";*/
+import  protect   from "../middleware/authMiddleware.js";
+/*import ROLES from "../config/permissions.js";*/
 
 const router = express.Router()
 
-router.route('/getElems').get(getElems)
-router.route('/getEvents').get(getEvents)
-router.route('/updateEvents').get(updateEvents)
-router.route('/getFixtures').get(getFixtures)
-router.route('/getPlayers').get(getPlayers)
-router.route('/getTeams').get(getTeams)
-router.route('/fixtures').get(loadFixtures)
-router.route('/load').get(loadData)
-router.route('/list2').get(addPlayersList2)
-router.route('/list3').get(addPlayersList3)
-router.route('/list4').get(addPlayersList4)
-router.route('/list5').get(addPlayersList5)
-router.route('/list6').get(addPlayersList6)
-router.route('/list7').get(addPlayersList7)
+router.post('/register', registerUser)
+router.post('/login', loginUser)
+router.post('/password-reset', requestPasswordReset)
+router.post('/reset', resetPassword)
+router.put('/change-password', changePassword)
+router.get('/getElems', getElems)
+router.get('/getEvents', getEvents)
+router.get('/updateEvents', updateEvents)
+router.get('/getFixtures', getFixtures)
+router.get('/getPlayers', getPlayers)
+router.get('/getTeams', getTeams)
+router.get('/fixtures', protect, loadFixtures)
+router.get('/load', protect, loadData)
+router.get('/list2', protect, addPlayersList2)
+router.get('/list3', protect, addPlayersList3)
+router.get('/list4', protect, addPlayersList4)
+router.get('/list5', protect, addPlayersList5)
+router.get('/list6', protect, addPlayersList6)
+router.get('/list7', protect, addPlayersList7)
 
 export default router

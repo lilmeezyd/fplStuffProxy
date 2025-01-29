@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-const uri = "mongodb+srv://denismoini09:4xg6pbL4IBCiCPeZ@ugFantasy.7pl0whs.mongodb.net/eplfantasy?retryWrites=true&w=majority&appName=ugFantasy"
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 const connectDB = async()=> {
     try {
-        const conn = await mongoose.connect(uri, clientOptions)
+        const conn = await mongoose.connect(process.env.MONGO_URI, clientOptions)
         console.log(`MongoDB connect ${conn.connection.host}`)
     } catch (error) {
         console.log(error.message)
@@ -11,4 +10,4 @@ const connectDB = async()=> {
     }
 }
 
-export default connectDB
+export default connectDB 

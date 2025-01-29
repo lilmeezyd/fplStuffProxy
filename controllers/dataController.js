@@ -5,7 +5,218 @@ import Elem from "../models/elementType.js";
 import Team from "../models/teamModel.js";
 import Event from "../models/eventModel.js";
 import Fixture from "../models/fixtureModel.js";
- 
+import User from "../models/userModel.js"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import  crypto from "crypto";
+
+//@desc Register User
+//@route POST /api/users
+//@access Public
+const registerUser = asyncHandler(async (req, res) => {
+    const { firstName, lastName, email, password1, password2 } = req.body;
+    if (!firstName || !lastName || !email || !password1 || !password2) {
+      res.status(400).json({ msg: "Please add all fields!" });
+      throw new Error("Please add all fields!");
+    }
+  
+    // Check if passwords do match
+    if (password1 !== password2) {
+      res.status(400).json({ msg: "Passwords do not match!" });
+      throw new Error("Passwords do not match!");
+    }
+  
+    // Check if password is required length
+    if (password1.length < 6) {
+      res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
+      throw new Error("Passwords should have at least 6 characters!");
+    }
+  
+    // Check if user exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      res.status(400).json({ msg: "User already exists!" })
+      throw new Error("User already exists");
+    }
+  
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password1, salt);
+  
+    // Create User
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword
+    });
+  
+    if (user) {
+      res.status(201).json({
+        _id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        token: generateToken(user._id),
+        msg: 'successfully registered'
+      });
+    } else {
+      res.status(400).json("Invalid user data!" );
+      throw new Error("Invalid user data");
+    }
+  });
+
+//@desc Authenticate User
+//@route POST /api/users/login
+//@access Public
+const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+  
+    if (!user && !password) {
+      res.status(400).json({ msg: "Enter all fields!" })
+      throw new Error("Enter all fields!")
+    }
+  
+    if (!user) {
+      res.status(400).json({ msg: "User not registered!" })
+      throw new Error("User not registered!")
+    }
+  
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.json({
+        _id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        msg: 'successfully logged in',
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ msg: "Invalid credentials!" });
+      throw new Error("Invalid credentials");
+    }
+  });
+
+//@desc Password reset request
+//@route
+//@access Public
+const requestPasswordReset = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(400).json({ msg: "User does not exist!" })
+      throw new Error("User does not exist");
+    }
+  
+    let token = await Token.findOne({ userId: user._id });
+    if (token) {
+      await Token.deleteOne();
+    }
+  
+    let resetToken = crypto.randomBytes(32).toString("hex");
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(resetToken, salt);
+  
+    await Token.create({
+      userId: user._id,
+      token: hash,
+      createdAt: Date.now(),
+    });
+  
+    const link = `https://foodrecall.vercel.app/password-reset?token=${resetToken}&id=${user._id}`;
+    const welcomeSubject = `Password reset!`;
+    const welcomeContent = `<div>
+        <h1>Hi, ${firstName}</h1>
+        <p>You requested for a password reset!</p>
+        <div>Follow the link <a href=${link}>here</a></div>
+        </div>`;
+    sendNewsletter(email, welcomeSubject, welcomeContent)
+    res.status(200).json('Password reset instructions sent to your email.');
+  })
+  
+  //@desc Password restting
+  //@access Public
+  const resetPassword = asyncHandler(async (req, res) => {
+    const { userId, token, password } = req.body;
+    let passwordResetToken = await Token.findOne({ userId });
+    if (!passwordResetToken) {
+      res.status(400).json({ msg: "Invalid or expired password reset token!" })
+      throw new Error("Invalid or expired password reset token");
+    }
+  
+    const isValid = await bcrypt.compare(token, passwordResetToken.token);
+    if (!isValid) {
+      res.status(400).json({ msg: "Invalid or expired password reset token!" })
+      throw new Error("Invalid or expired password reset token");
+    }
+  
+    // Hash password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
+  
+    await User.updateOne(
+      { _id: userId },
+      { $set: { password: hashedPassword } },
+      { new: true }
+    );
+    const user = await User.findById({ _id: userId });
+    sendEmail(
+      user.email,
+      "Password Reset Successfully",
+      {
+        name: user.name,
+      },
+      "./template/resetPassword.handlebars"
+    );
+  
+    await passwordResetToken.deleteOne();
+    return true;
+  });
+  
+  
+//@desc Change Password
+//@route PUT /api/users/newPassword
+//@access Private
+const changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword, confirmPassword } = req.body
+    const user = await User.findById(req.user._id)
+    const { password } = user
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      res.status(400).json({ msg: 'Please enter all fields!' })
+      throw new Error('Please enter all fields')
+    }
+  
+    // Check if new passwords match
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ msg: "Passwords do not match!" });
+      throw new Error("Passwords do not match!");
+    }
+  
+    // check if old and new passwords match
+    if (user && (await bcrypt.compare(newPassword, password))) {
+      res.status(400).json({ msg: "New password can't match old password!" });
+      throw new Error("New password can't match old password!")
+    }
+  
+    // Check if newPassword is required length
+    if (newPassword.length < 6) {
+      res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
+      throw new Error("Passwords should have at least 6 characters!");
+    }
+  
+    if (user && (await bcrypt.compare(oldPassword, password))) {
+      //hash password
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(newPassword, salt)
+      await User.updateOne(
+        { _id: req.user._id },
+        { $set: { password: hashedPassword } },
+        { new: true }
+      );
+      res.status(200).json({ msg: 'Password updated!' })
+    }
+  }) 
 const loadFixtures = asyncHandler(async (req, res) => {
     let config = {
         method: 'get',
@@ -26,8 +237,11 @@ const loadFixtures = asyncHandler(async (req, res) => {
                 {upsert: true, new: true}
             )
         }))
+
+        res.status(201).json('Fixtures loaded')
       } catch (error) {
         console.log(error)
+        res.json('An Error occured')
       }
 })
 
@@ -51,6 +265,7 @@ const updateEvents = asyncHandler(async (req, res) => {
         res.status(201).json('Events updated')
     } catch (error) {
         console.log(error)
+        res.json('An error occcured')
     }
 })
 
@@ -64,14 +279,8 @@ const loadData = asyncHandler(async (req, res) => {
     try {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
-        const { events, elements, teams, element_types } = response
-        await Promise.all(events.map(async event => {
-            const {id, name, deadline_time, finished, is_previous, is_current, is_next} = event
-            await Event.findOneAndUpdate({id:id}, {id, name, deadline_time, finished, is_previous, is_current, is_next}, 
-                {upsert: true, new: true}
-            )
-        }))
-        await Promise.all(element_types.map(async elem => {
+        const { elements } = response
+        /*await Promise.all(element_types.map(async elem => {
             const {id, plural_name, singular_name, singular_name_short} = elem
             await Elem.findOneAndUpdate({id:id}, {id, plural_name, singular_name, singular_name_short}, 
                 {upsert: true, new: true}
@@ -82,7 +291,7 @@ const loadData = asyncHandler(async (req, res) => {
             await Team.findOneAndUpdate({id:id}, {code, id, name, short_name, strength}, 
                 {upsert: true, new: true}
             )
-        }))
+        }))*/
 
         try {
             await Promise.all(elements.slice(0, 100).map(async element => {
@@ -124,9 +333,10 @@ const loadData = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -136,7 +346,6 @@ const loadData = asyncHandler(async (req, res) => {
 
 const getPlayers = asyncHandler(async (req, res) => {
     const players = await EplPlayer.find({})
-    console.log(players)
     res.status(200).json(players)
 })
 const getTeams = asyncHandler(async (req, res) => {
@@ -210,9 +419,10 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -271,9 +481,10 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -332,9 +543,10 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -393,9 +605,10 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -455,9 +668,10 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -517,9 +731,10 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
                     expected_goals_conceded_per_90,
                     goals_conceded_per_90, ...resData }, {upsert: true, new: true})
             }))
-            res.status(200).json('players loaded')
+            res.status(201).json('players loaded')
         } catch (error) {
             console.log(error)
+            res.status('An error occured')
         }
 
     } catch (error) {
@@ -527,7 +742,18 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
     }
 })
 
-export { loadData,
+// Generate JWT
+const generateToken = (id, roles) => {
+    return jwt.sign({ id, roles }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  };
+
+export { 
+    registerUser,
+    loginUser,
+    requestPasswordReset,
+    resetPassword,
+    changePassword,
+    loadData,
     loadFixtures,
     getElems,
     getEvents,
