@@ -7,6 +7,9 @@ const eventSchema = mongoose.Schema({
   is_previous: {type: Boolean},
   is_current: {type: Boolean},
   is_next: {type: Boolean},
+},
+{
+  timestamps: true,
 })
 const Event = mongoose.model('Event', eventSchema)
 export default Event

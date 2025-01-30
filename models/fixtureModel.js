@@ -9,6 +9,9 @@ const fixtureSchema = mongoose.Schema({
     team_h: {type: Number},
     team_h_difficulty: {type: Number},
   team_a_difficulty: {type: Number}
+},
+{
+  timestamps: true,
 })
 
 const Fixture = mongoose.model('Fixture', fixtureSchema)
