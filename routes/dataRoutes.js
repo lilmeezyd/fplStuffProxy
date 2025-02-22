@@ -14,7 +14,8 @@ import {
     getTeams,
     addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5,
     addPlayersList6, addPlayersList7,
-    updateEvents
+    updateEvents,
+    addPlayersList8
  } from '../controllers/dataController.js'
 import  protect   from "../middleware/authMiddleware.js";
 /*import ROLES from "../config/permissions.js";*/
@@ -40,5 +41,6 @@ router.post('/list4', protect, addPlayersList4)
 router.post('/list5', protect, addPlayersList5)
 router.post('/list6', protect, addPlayersList6)
 router.post('/list7', protect, addPlayersList7)
+router.post('/list8', protect, addPlayersList8)
 
 export default router

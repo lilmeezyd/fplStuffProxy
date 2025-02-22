@@ -707,7 +707,72 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-            await Promise.all(elements.slice(600, 730).map(async element => {
+            await Promise.all(elements.slice(600, 700).map(async element => {
+                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                    team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+                    own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+                    starts, expected_goals,
+                    expected_assists,
+                    cost_change_start,
+                    expected_goal_involvements,
+                    expected_goals_conceded, expected_goals_per_90,
+                    saves_per_90,
+                    chance_of_playing_next_round,
+                    expected_assists_per_90,
+                    expected_goal_involvements_per_90,
+                    expected_goals_conceded_per_90,
+                    goals_conceded_per_90
+                } = element
+                let config = {
+                    method: 'get',
+                    maxBodyLength: Infinity,
+                    url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
+                    headers: {}
+                };
+                const elementData = await axios.request(config)
+                const resData = await elementData.data
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                    team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+                    own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+                    starts, expected_goals,
+                    expected_assists,
+                    expected_goal_involvements,
+                    expected_goals_conceded, expected_goals_per_90,
+                    saves_per_90,
+                    cost_change_start,
+                    chance_of_playing_next_round,
+                    expected_assists_per_90,
+                    expected_goal_involvements_per_90,
+                    expected_goals_conceded_per_90,
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
+            }))
+            res.status(201).json('players loaded')
+        } catch (error) {
+            console.log(error)
+            res.status('An error occured')
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+const addPlayersList8 = asyncHandler(async (req, res) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `https://fantasy.premierleague.com/api/bootstrap-static`,
+        headers: {}
+    };
+    try {
+        const bootstrapped = await axios.request(config)
+        const response = await bootstrapped.data
+        const { elements } = response
+
+        try {
+            await Promise.all(elements.slice(700, 800).map(async element => {
                 const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
@@ -778,5 +843,6 @@ export {
     getPlayers,
     getTeams,
     updateEvents,
-    addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5, addPlayersList6, addPlayersList7
+    addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5, addPlayersList6, addPlayersList7,
+    addPlayersList8
 }
