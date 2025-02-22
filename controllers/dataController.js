@@ -8,7 +8,8 @@ import Fixture from "../models/fixtureModel.js";
 import User from "../models/userModel.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import  crypto from "crypto";
+import crypto from "crypto";
+import Token from "../models/tokenModel.js"
 
 //@desc Register User
 //@route POST /api/users
@@ -16,55 +17,55 @@ import  crypto from "crypto";
 const registerUser = asyncHandler(async (req, res) => {
     const { firstName, lastName, email, password1, password2 } = req.body;
     if (!firstName || !lastName || !email || !password1 || !password2) {
-      res.status(400).json({ msg: "Please add all fields!" });
-      throw new Error("Please add all fields!");
+        res.status(400).json({ msg: "Please add all fields!" });
+        throw new Error("Please add all fields!");
     }
-  
+
     // Check if passwords do match
     if (password1 !== password2) {
-      res.status(400).json({ msg: "Passwords do not match!" });
-      throw new Error("Passwords do not match!");
+        res.status(400).json({ msg: "Passwords do not match!" });
+        throw new Error("Passwords do not match!");
     }
-  
+
     // Check if password is required length
     if (password1.length < 6) {
-      res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
-      throw new Error("Passwords should have at least 6 characters!");
+        res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
+        throw new Error("Passwords should have at least 6 characters!");
     }
-  
+
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      res.status(400).json({ msg: "User already exists!" })
-      throw new Error("User already exists");
+        res.status(400).json({ msg: "User already exists!" })
+        throw new Error("User already exists");
     }
-  
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password1, salt);
-  
+
     // Create User
     const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword
     });
-  
+
     if (user) {
-      res.status(201).json({
-        _id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        token: generateToken(user._id),
-        msg: 'successfully registered'
-      });
+        res.status(201).json({
+            _id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            token: generateToken(user._id),
+            msg: 'successfully registered'
+        });
     } else {
-      res.status(400).json("Invalid user data!" );
-      throw new Error("Invalid user data");
+        res.status(400).json("Invalid user data!");
+        throw new Error("Invalid user data");
     }
-  });
+});
 
 //@desc Authenticate User
 //@route POST /api/users/login
@@ -72,31 +73,31 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-  
+
     if (!user && !password) {
-      res.status(400).json({ msg: "Enter all fields!" })
-      throw new Error("Enter all fields!")
+        res.status(400).json({ msg: "Enter all fields!" })
+        throw new Error("Enter all fields!")
     }
-  
+
     if (!user) {
-      res.status(400).json({ msg: "User not registered!" })
-      throw new Error("User not registered!")
+        res.status(400).json({ msg: "User not registered!" })
+        throw new Error("User not registered!")
     }
-  
+
     if (user && (await bcrypt.compare(password, user.password))) {
-      res.json({
-        _id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        msg: 'successfully logged in',
-        token: generateToken(user._id),
-      });
+        res.json({
+            _id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            msg: 'successfully logged in',
+            token: generateToken(user._id),
+        });
     } else {
-      res.status(400).json({ msg: "Invalid credentials!" });
-      throw new Error("Invalid credentials");
+        res.status(400).json({ msg: "Invalid credentials!" });
+        throw new Error("Invalid credentials");
     }
-  });
+});
 
 //@desc Password reset request
 //@route
@@ -105,25 +106,25 @@ const requestPasswordReset = asyncHandler(async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(400).json({ msg: "User does not exist!" })
-      throw new Error("User does not exist");
+        res.status(400).json({ msg: "User does not exist!" })
+        throw new Error("User does not exist");
     }
-  
+
     let token = await Token.findOne({ userId: user._id });
     if (token) {
-      await Token.deleteOne();
+        await Token.deleteOne();
     }
-  
+
     let resetToken = crypto.randomBytes(32).toString("hex");
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(resetToken, salt);
-  
+
     await Token.create({
-      userId: user._id,
-      token: hash,
-      createdAt: Date.now(),
+        userId: user._id,
+        token: hash,
+        createdAt: Date.now(),
     });
-  
+
     const link = `https://foodrecall.vercel.app/password-reset?token=${resetToken}&id=${user._id}`;
     const welcomeSubject = `Password reset!`;
     const welcomeContent = `<div>
@@ -133,48 +134,48 @@ const requestPasswordReset = asyncHandler(async (req, res) => {
         </div>`;
     sendNewsletter(email, welcomeSubject, welcomeContent)
     res.status(200).json('Password reset instructions sent to your email.');
-  })
-  
-  //@desc Password restting
-  //@access Public
-  const resetPassword = asyncHandler(async (req, res) => {
+})
+
+//@desc Password restting
+//@access Public
+const resetPassword = asyncHandler(async (req, res) => {
     const { userId, token, password } = req.body;
     let passwordResetToken = await Token.findOne({ userId });
     if (!passwordResetToken) {
-      res.status(400).json({ msg: "Invalid or expired password reset token!" })
-      throw new Error("Invalid or expired password reset token");
+        res.status(400).json({ msg: "Invalid or expired password reset token!" })
+        throw new Error("Invalid or expired password reset token");
     }
-  
+
     const isValid = await bcrypt.compare(token, passwordResetToken.token);
     if (!isValid) {
-      res.status(400).json({ msg: "Invalid or expired password reset token!" })
-      throw new Error("Invalid or expired password reset token");
+        res.status(400).json({ msg: "Invalid or expired password reset token!" })
+        throw new Error("Invalid or expired password reset token");
     }
-  
+
     // Hash password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
-  
+
     await User.updateOne(
-      { _id: userId },
-      { $set: { password: hashedPassword } },
-      { new: true }
+        { _id: userId },
+        { $set: { password: hashedPassword } },
+        { new: true }
     );
     const user = await User.findById({ _id: userId });
     sendEmail(
-      user.email,
-      "Password Reset Successfully",
-      {
-        name: user.name,
-      },
-      "./template/resetPassword.handlebars"
+        user.email,
+        "Password Reset Successfully",
+        {
+            name: user.name,
+        },
+        "./template/resetPassword.handlebars"
     );
-  
+
     await passwordResetToken.deleteOne();
     return true;
-  });
-  
-  
+});
+
+
 //@desc Change Password
 //@route PUT /api/users/newPassword
 //@access Private
@@ -183,66 +184,68 @@ const changePassword = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
     const { password } = user
     if (!oldPassword || !newPassword || !confirmPassword) {
-      res.status(400).json({ msg: 'Please enter all fields!' })
-      throw new Error('Please enter all fields')
+        res.status(400).json({ msg: 'Please enter all fields!' })
+        throw new Error('Please enter all fields')
     }
-  
+
     // Check if new passwords match
     if (newPassword !== confirmPassword) {
-      res.status(400).json({ msg: "Passwords do not match!" });
-      throw new Error("Passwords do not match!");
+        res.status(400).json({ msg: "Passwords do not match!" });
+        throw new Error("Passwords do not match!");
     }
-  
+
     // check if old and new passwords match
     if (user && (await bcrypt.compare(newPassword, password))) {
-      res.status(400).json({ msg: "New password can't match old password!" });
-      throw new Error("New password can't match old password!")
+        res.status(400).json({ msg: "New password can't match old password!" });
+        throw new Error("New password can't match old password!")
     }
-  
+
     // Check if newPassword is required length
     if (newPassword.length < 6) {
-      res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
-      throw new Error("Passwords should have at least 6 characters!");
+        res.status(400).json({ msg: "Passwords should have at least 6 characters!" });
+        throw new Error("Passwords should have at least 6 characters!");
     }
-  
+
     if (user && (await bcrypt.compare(oldPassword, password))) {
-      //hash password
-      const salt = await bcrypt.genSalt(10)
-      const hashedPassword = await bcrypt.hash(newPassword, salt)
-      await User.updateOne(
-        { _id: req.user._id },
-        { $set: { password: hashedPassword } },
-        { new: true }
-      );
-      res.status(200).json({ msg: 'Password updated!' })
+        //hash password
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(newPassword, salt)
+        await User.updateOne(
+            { _id: req.user._id },
+            { $set: { password: hashedPassword } },
+            { new: true }
+        );
+        res.status(200).json({ msg: 'Password updated!' })
     }
-  }) 
+})
 const loadFixtures = asyncHandler(async (req, res) => {
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: `https://fantasy.premierleague.com/api/fixtures`,
         headers: {}
-      };
-      try {
+    };
+    try {
         const response = await axios.request(config)
         const fixtures = await response.data
         await Promise.all(fixtures.map(async fixture => {
-            const {event, finished, kickoff_time, id, started, team_a,team_h,
-            team_h_difficulty,
-          team_a_difficulty} = fixture
-            await Fixture.findOneAndUpdate({id:id}, {event, finished, kickoff_time, id, started, team_a,team_h,
+            const { event, finished, kickoff_time, id, started, team_a, team_h,
                 team_h_difficulty,
-              team_a_difficulty}, 
-                {upsert: true, new: true}
+                team_a_difficulty } = fixture
+            await Fixture.findOneAndUpdate({ id: id }, {
+                event, finished, kickoff_time, id, started, team_a, team_h,
+                team_h_difficulty,
+                team_a_difficulty
+            },
+                { upsert: true, new: true }
             )
         }))
 
         res.status(201).json('Fixtures loaded')
-      } catch (error) {
+    } catch (error) {
         console.log(error)
         res.json('An Error occured')
-      }
+    }
 })
 
 const updateEvents = asyncHandler(async (req, res) => {
@@ -257,9 +260,9 @@ const updateEvents = asyncHandler(async (req, res) => {
         const response = await bootstrapped.data
         const { events } = response
         await Promise.all(events.map(async event => {
-            const {id, name, deadline_time, finished, is_previous, is_current, is_next} = event
-            await Event.findOneAndUpdate({id:id}, {id, name, deadline_time, finished, is_previous, is_current, is_next}, 
-                {upsert: true, new: true}
+            const { id, name, deadline_time, finished, is_previous, is_current, is_next } = event
+            await Event.findOneAndUpdate({ id: id }, { id, name, deadline_time, finished, is_previous, is_current, is_next },
+                { upsert: true, new: true }
             )
         }))
         res.status(201).json('Events updated')
@@ -318,7 +321,8 @@ const loadData = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -331,7 +335,8 @@ const loadData = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -354,7 +359,7 @@ const getTeams = asyncHandler(async (req, res) => {
 })
 const getEvents = asyncHandler(async (req, res) => {
     const events = await Event.find({})
-    res.status(200).json(events.sort((x,y) => x.id < y.id ? -1 : 1))
+    res.status(200).json(events.sort((x, y) => x.id < y.id ? -1 : 1))
 })
 const getElems = asyncHandler(async (req, res) => {
     const elems = await Elem.find({})
@@ -380,7 +385,7 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
         const { elements } = response
 
         try {
-             await Promise.all(elements.slice(100, 200).map(async element => {
+            await Promise.all(elements.slice(100, 200).map(async element => {
                 const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
@@ -404,7 +409,8 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -417,7 +423,8 @@ const addPlayersList2 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -466,7 +473,8 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -479,7 +487,8 @@ const addPlayersList3 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -528,7 +537,8 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -541,7 +551,8 @@ const addPlayersList4 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -590,7 +601,8 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -603,7 +615,8 @@ const addPlayersList5 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -653,7 +666,8 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -666,7 +680,8 @@ const addPlayersList6 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -716,7 +731,8 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
                 };
                 const elementData = await axios.request(config)
                 const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({id:id}, { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
+                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
                     team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
                     own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
                     starts, expected_goals,
@@ -729,7 +745,8 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
                     expected_assists_per_90,
                     expected_goal_involvements_per_90,
                     expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData }, {upsert: true, new: true})
+                    goals_conceded_per_90, ...resData
+                }, { upsert: true, new: true })
             }))
             res.status(201).json('players loaded')
         } catch (error) {
@@ -745,9 +762,9 @@ const addPlayersList7 = asyncHandler(async (req, res) => {
 // Generate JWT
 const generateToken = (id, roles) => {
     return jwt.sign({ id, roles }, process.env.JWT_SECRET, { expiresIn: "30d" });
-  };
+};
 
-export { 
+export {
     registerUser,
     loginUser,
     requestPasswordReset,
@@ -761,4 +778,5 @@ export {
     getPlayers,
     getTeams,
     updateEvents,
-     addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5, addPlayersList6, addPlayersList7  }
+    addPlayersList2, addPlayersList3, addPlayersList4, addPlayersList5, addPlayersList6, addPlayersList7
+}
