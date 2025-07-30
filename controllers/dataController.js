@@ -283,6 +283,7 @@ const loadData = asyncHandler(async (req, res) => {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
         const { elements } = response
+        
         /*await Promise.all(element_types.map(async elem => {
             const {id, plural_name, singular_name, singular_name_short} = elem
             await Elem.findOneAndUpdate({id:id}, {id, plural_name, singular_name, singular_name_short}, 
@@ -296,49 +297,54 @@ const loadData = asyncHandler(async (req, res) => {
             )
         }))*/
 
-        try {
-            await Promise.all(elements.slice(0, 100).map(async element => {
-                const { element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-                    team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-                    own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-                    starts, expected_goals,
-                    expected_assists,
-                    cost_change_start,
-                    expected_goal_involvements,
-                    expected_goals_conceded, expected_goals_per_90,
-                    saves_per_90,
-                    chance_of_playing_next_round,
-                    expected_assists_per_90,
-                    expected_goal_involvements_per_90,
-                    expected_goals_conceded_per_90,
-                    goals_conceded_per_90
-                } = element
-                let config = {
-                    method: 'get',
-                    maxBodyLength: Infinity,
-                    url: `https://fantasy.premierleague.com/api/element-summary/${element.id}/`,
-                    headers: {}
-                };
-                const elementData = await axios.request(config)
-                const resData = await elementData.data
-                const a = await EplPlayer.findOneAndUpdate({ id: id }, {
-                    element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
-                    team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
-                    own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
-                    starts, expected_goals,
-                    expected_assists,
-                    expected_goal_involvements,
-                    expected_goals_conceded, expected_goals_per_90,
-                    saves_per_90,
-                    cost_change_start,
-                    chance_of_playing_next_round,
-                    expected_assists_per_90,
-                    expected_goal_involvements_per_90,
-                    expected_goals_conceded_per_90,
-                    goals_conceded_per_90, ...resData
-                }, { upsert: true, new: true })
-            }))
-            res.status(201).json('players loaded')
+        try{
+
+const chunkArray = (arr, size) =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+
+const chunks = chunkArray(elements, 100);
+
+for (const batch of chunks) {
+  await Promise.all(batch.map(async element => {
+    try {
+      const {
+        element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+        team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+        own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+        starts, expected_goals, expected_assists, cost_change_start, expected_goal_involvements,
+        expected_goals_conceded, expected_goals_per_90, saves_per_90, chance_of_playing_next_round,
+        expected_assists_per_90, expected_goal_involvements_per_90, expected_goals_conceded_per_90,
+        goals_conceded_per_90
+      } = element;
+
+      const { data: resData } = await axios.get(`https://fantasy.premierleague.com/api/element-summary/${id}/`);
+
+      await EplPlayer.findOneAndUpdate(
+        { id },
+        {
+          element_type, event_points, first_name, web_name, id, news, now_cost, second_name,
+          team, team_code, total_points, minutes, goals_scored, assists, clean_sheets, goals_conceded,
+          own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
+          starts, expected_goals, expected_assists, cost_change_start, expected_goal_involvements,
+          expected_goals_conceded, expected_goals_per_90, saves_per_90, chance_of_playing_next_round,
+          expected_assists_per_90, expected_goal_involvements_per_90, expected_goals_conceded_per_90,
+          goals_conceded_per_90,
+          ...resData,
+        },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.error(`Failed to update player ${element.id}:`, err.message);
+    }
+  }));
+
+  console.log(`Finished batch of 100`);
+}
+
+res.json({ message: 'All players updated in 100-batch chunks' });
+
         } catch (error) {
             console.log(error)
             res.status('An error occured')
