@@ -279,25 +279,36 @@ const loadData = asyncHandler(async (req, res) => {
         url: `https://fantasy.premierleague.com/api/bootstrap-static`,
         headers: {}
     };
+   await  Elem.deleteMany({})
     try {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
-        const { elements } = response
+        const { elements, element_types } = response
         
-        /*await Promise.all(element_types.map(async elem => {
-            const {id, plural_name, singular_name, singular_name_short} = elem
-            await Elem.findOneAndUpdate({id:id}, {id, plural_name, singular_name, singular_name_short}, 
-                {upsert: true, new: true}
-            )
-        }))
-        await Promise.all(teams.map(async team => {
+      /*  const operations = element_types.map(elem => {
+          const { id, plural_name, singular_name, singular_name_short } = elem;
+
+          return {
+            updateOne: {
+              filter: { id },
+              update: {
+                $set: { id, plural_name, singular_name, singular_name_short },
+              },
+              upsert: true,
+            },
+          };
+        });
+
+        await Elem.bulkWrite(operations);
+res.json('done')*/
+     /*   await Promise.all(teams.map(async team => {
             const {code, id, name, short_name, strength} = team
             await Team.findOneAndUpdate({id:id}, {code, id, name, short_name, strength}, 
                 {upsert: true, new: true}
             )
         }))*/
 
-        try{
+       try{
 
 const chunkArray = (arr, size) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
