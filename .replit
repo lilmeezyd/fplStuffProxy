@@ -22,3 +22,6 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "nodemon server.js"
+
+[agent]
+expertMode = true

@@ -88,7 +88,13 @@ const eplPlayerSchema = mongoose.Schema({
     history: {
         type: Array,
         required: true
-    }
+    },
+    clearances_blocks_interceptions:{
+        type: Number
+    },
+    recoveries: { type: Number},
+    tackles: { type: Number},
+    defensive_contribution: { type: Number }
 }, {
     timestamps: true,
 })

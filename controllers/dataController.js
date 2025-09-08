@@ -279,13 +279,13 @@ const loadData = asyncHandler(async (req, res) => {
         url: `https://fantasy.premierleague.com/api/bootstrap-static`,
         headers: {}
     };
-   await  Elem.deleteMany({})
+   
     try {
         const bootstrapped = await axios.request(config)
         const response = await bootstrapped.data
         const { elements, element_types } = response
         
-      /*  const operations = element_types.map(elem => {
+       const operations = element_types.map(elem => {
           const { id, plural_name, singular_name, singular_name_short } = elem;
 
           return {
@@ -299,7 +299,7 @@ const loadData = asyncHandler(async (req, res) => {
           };
         });
 
-        await Elem.bulkWrite(operations);
+       /* await Elem.bulkWrite(operations);
 res.json('done')*/
      /*   await Promise.all(teams.map(async team => {
             const {code, id, name, short_name, strength} = team
@@ -308,7 +308,7 @@ res.json('done')*/
             )
         }))*/
 
-       try{
+      try{
 
 const chunkArray = (arr, size) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
@@ -327,7 +327,9 @@ for (const batch of chunks) {
         starts, expected_goals, expected_assists, cost_change_start, expected_goal_involvements,
         expected_goals_conceded, expected_goals_per_90, saves_per_90, chance_of_playing_next_round,
         expected_assists_per_90, expected_goal_involvements_per_90, expected_goals_conceded_per_90,
-        goals_conceded_per_90
+        goals_conceded_per_90,
+          clearances_blocks_interceptions,
+          recoveries,tackles,defensive_contribution
       } = element;
 
       const { data: resData } = await axios.get(`https://fantasy.premierleague.com/api/element-summary/${id}/`);
@@ -340,7 +342,7 @@ for (const batch of chunks) {
           own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bonus,
           starts, expected_goals, expected_assists, cost_change_start, expected_goal_involvements,
           expected_goals_conceded, expected_goals_per_90, saves_per_90, chance_of_playing_next_round,
-          expected_assists_per_90, expected_goal_involvements_per_90, expected_goals_conceded_per_90,
+            clearances_blocks_interceptions,recoveries,tackles,defensive_contributionexpected_assists_per_90, expected_goal_involvements_per_90, expected_goals_conceded_per_90,
           goals_conceded_per_90,
           ...resData,
         },
